@@ -97,8 +97,6 @@ export default function Home() {
                 {
                   loading: "Transforming...",
                   success: (data) => {
-                    setCode(data);
-
                     try {
                       const blob = new Blob([data], {
                         type: "text/plain; charset=utf-8",
@@ -179,6 +177,19 @@ export default function Home() {
           </Button>
         </CardFooter>
       </Card>
+
+      <p className="text-xs text-muted-foreground">
+        Open Source on Github:{" "}
+        <span className="text-blue-400 hover:text-blue-500">
+          <a
+            href="https://github.com/notpoiu/pls-fix-luarmor-script"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            https://github.com/notpoiu/pls-fix-luarmor-script
+          </a>
+        </span>
+      </p>
     </main>
   );
 }
