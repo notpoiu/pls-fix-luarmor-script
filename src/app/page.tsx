@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { toast } from "sonner";
+import { checkForNestedMacros } from "@/lib/codechecker";
 
 export default function Home() {
   const { transformLuau } = useDarkLua();
@@ -79,10 +80,15 @@ export default function Home() {
                 localStorage.setItem("didWarn", "true");
               }
 
+              const { isNested, error } = checkForNestedMacros(code);
+              if (isNested) {
+                toast.error(error);
+                return;
+              }
+
               toast.promise(
                 transformLuau(code, {
                   rules: [
-                    "remove_comments",
                     "remove_types",
                     "remove_if_expression",
                     "remove_nil_declaration",
