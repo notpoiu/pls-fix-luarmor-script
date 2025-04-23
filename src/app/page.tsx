@@ -3,7 +3,7 @@ import { useDarkLua } from "@/components/darklua-provider";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { DownloadIcon, UploadIcon } from "lucide-react";
+import { CheckIcon, DownloadIcon, UploadIcon } from "lucide-react";
 import { useState } from "react";
 import {
   Card,
@@ -39,7 +39,7 @@ export default function Home() {
             />
           </div>
         </CardContent>
-        <CardFooter className="flex flex-row gap-2">
+        <CardFooter className="flex flex-row gap-2 flex-wrap">
           <Button
             onClick={() => {
               const file = document.createElement("input");
@@ -65,7 +65,7 @@ export default function Home() {
             variant={"outline"}
           >
             <UploadIcon />
-            <span className="max-sm:hidden">Import from File</span>
+            Import from File
           </Button>
           <Button
             variant={"outline"}
@@ -179,7 +179,22 @@ export default function Home() {
             }}
           >
             <DownloadIcon />
-            <span className="max-sm:hidden">Export to File</span>
+            Export to File
+          </Button>
+          <Button
+            variant={"outline"}
+            onClick={() => {
+              const { isNested, error } = checkForNestedMacros(code);
+              if (isNested) {
+                toast.error(error);
+                return;
+              }
+
+              toast.success("No invalid luraph macros detected!");
+            }}
+          >
+            <CheckIcon />
+            [BETA] Check Luraph Macro Validity
           </Button>
         </CardFooter>
       </Card>
