@@ -1,13 +1,13 @@
 "use client";
+/* tslint:disable */
+/* eslint-disable */
 
 import init, { process_code } from "@/../public/darklua/darklua_wasm";
 import React, { useEffect } from "react";
 
 const provider = React.createContext({
   transformLuau: async (
-    // @ts-ignore
     code: string,
-    // @ts-ignore
     config?: Record<string, unknown>
   ): Promise<string> => "",
 });

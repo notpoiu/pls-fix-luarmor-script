@@ -113,7 +113,7 @@ export default function Home() {
                       setTimeout(() => {
                         URL.revokeObjectURL(url);
                       }, 100);
-                    } catch (error) {
+                    } catch {
                       throw new Error("Failed to download the file");
                     }
 
