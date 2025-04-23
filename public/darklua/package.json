@@ -1,0 +1,24 @@
+{
+  "name": "darklua-wasm",
+  "type": "module",
+  "collaborators": [
+    "jeparlefrancais <jeparlefrancais21@gmail.com>"
+  ],
+  "description": "WebAssembly package for darklua",
+  "version": "0.1.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seaofvoices/darklua"
+  },
+  "files": [
+    "darklua_wasm_bg.wasm",
+    "darklua_wasm.js",
+    "darklua_wasm.d.ts"
+  ],
+  "main": "darklua_wasm.js",
+  "types": "darklua_wasm.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
