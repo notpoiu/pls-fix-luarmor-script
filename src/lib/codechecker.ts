@@ -58,7 +58,7 @@ export function checkForNestedMacros(code: string): {
 
           return {
             isNested: true,
-            error: `Macro ${macro.macro} detected inside LPH_NO_VIRTUALIZE on line ${lineNumber}:\n\nMacros cannot be used inside LPH_NO_VIRTUALIZE.`,
+            error: `Macro ${macro.macro} detected inside LPH_NO_VIRTUALIZE on line ${lineNumber}:\n\nMacros cannot be used inside a non virtualized environement.`,
           };
         }
 
