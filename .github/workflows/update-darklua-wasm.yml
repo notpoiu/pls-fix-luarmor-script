@@ -1,0 +1,130 @@
+name: Update darklua wasm
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 1 * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-darklua-wasm-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  update-darklua-wasm:
+    name: Update darklua wasm
+    runs-on: ubuntu-latest
+    env:
+      DARKLUA_REPO: seaofvoices/darklua
+      DARKLUA_OUTPUT_DIR: public/darklua
+      WASMINFO_PATH: public/darklua/WASMINFO.txt
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check latest darklua release
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          release_json="$(gh release view --repo "$DARKLUA_REPO" --json tagName,publishedAt,url)"
+          tag_name="$(jq -r '.tagName' <<<"$release_json")"
+          published_at="$(jq -r '.publishedAt' <<<"$release_json")"
+          release_url="$(jq -r '.url' <<<"$release_json")"
+
+          current_tag=""
+          if [[ -f "$WASMINFO_PATH" ]]; then
+            current_tag="$(sed -n 's/^darklua_tag=//p' "$WASMINFO_PATH" | head -n 1)"
+          fi
+
+          should_update=true
+          if [[ "$current_tag" == "$tag_name" ]]; then
+            should_update=false
+          fi
+
+          {
+            echo "tag_name=$tag_name"
+            echo "published_at=$published_at"
+            echo "release_url=$release_url"
+            echo "should_update=$should_update"
+          } >> "$GITHUB_OUTPUT"
+
+          if [[ "$should_update" == "true" ]]; then
+            echo "darklua wasm update needed: current=${current_tag:-missing}, latest=$tag_name"
+          else
+            echo "darklua wasm is already current at $tag_name"
+          fi
+
+      - name: Install wasm toolchain
+        if: steps.check.outputs.should_update == 'true'
+        run: |
+          set -euo pipefail
+
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          rustup target add wasm32-unknown-unknown
+          cargo install wasm-pack --locked
+
+      - name: Build latest darklua wasm
+        if: steps.check.outputs.should_update == 'true'
+        run: |
+          set -euo pipefail
+
+          darklua_dir="$RUNNER_TEMP/darklua"
+          rm -rf "$darklua_dir"
+
+          git clone \
+            --depth 1 \
+            --branch "${{ steps.check.outputs.tag_name }}" \
+            "https://github.com/${DARKLUA_REPO}.git" \
+            "$darklua_dir"
+
+          darklua_commit="$(git -C "$darklua_dir" rev-parse HEAD)"
+
+          (
+            cd "$darklua_dir/site/darklua-wasm"
+            wasm-pack build --target web --release --out-dir pkg
+          )
+
+          mkdir -p "$DARKLUA_OUTPUT_DIR"
+          rsync -a --delete \
+            --exclude ".gitignore" \
+            --exclude "WASMINFO.txt" \
+            "$darklua_dir/site/darklua-wasm/pkg/" \
+            "$DARKLUA_OUTPUT_DIR/"
+
+          cat > "$WASMINFO_PATH" <<EOF
+          darklua_tag=${{ steps.check.outputs.tag_name }}
+          darklua_commit=$darklua_commit
+          darklua_release_url=${{ steps.check.outputs.release_url }}
+          darklua_published_at=${{ steps.check.outputs.published_at }}
+          darklua_repository=https://github.com/${DARKLUA_REPO}
+          wasm_package_path=${DARKLUA_OUTPUT_DIR}
+          generated_at=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          EOF
+
+      - name: Commit updated wasm
+        if: steps.check.outputs.should_update == 'true'
+        run: |
+          set -euo pipefail
+
+          if [[ -z "$(git status --porcelain -- "$DARKLUA_OUTPUT_DIR" "$WASMINFO_PATH")" ]]; then
+            echo "No file changes after rebuilding darklua wasm."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add "$DARKLUA_OUTPUT_DIR" "$WASMINFO_PATH"
+          git commit -m "Update darklua wasm to ${{ steps.check.outputs.tag_name }}"
+
+          git pull --rebase --autostash origin "$GITHUB_REF_NAME"
+          git push origin "HEAD:$GITHUB_REF_NAME"
