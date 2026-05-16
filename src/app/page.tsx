@@ -179,7 +179,7 @@ export default function Home() {
             }}
           >
             <DownloadIcon />
-            Export to File
+            Fix and Export to File
           </Button>
           <Button
             variant={"outline"}
