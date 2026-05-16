@@ -1,0 +1,7 @@
+darklua_tag=v0.18.0
+darklua_commit=0a66e644aa87b96614f9d5f672ad51773b6c5bb5
+darklua_release_url=https://github.com/seaofvoices/darklua/releases/tag/v0.18.0
+darklua_published_at=2026-02-24T21:24:18Z
+darklua_repository=https://github.com/seaofvoices/darklua
+wasm_package_path=public/darklua
+generated_at=2026-05-16T21:45:53Z
