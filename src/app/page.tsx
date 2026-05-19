@@ -98,6 +98,7 @@ export default function Home() {
                     "remove_compound_assignment",
                     "remove_unused_while",
                     "remove_empty_do",
+                    // "make_assignment_local"
                   ],
                 }),
                 {
